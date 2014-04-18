@@ -4,28 +4,11 @@ var https   = require("https"),
     sys     = require("sys"),
     url     = require("url"),
     path    = require("path"),
-    conf    = require('./conf'),
-    mines   = require('./mineTypes'),
-    rewrite = conf.rewrite;
+    mines   = require('./refer/mineTypes');
 
-var readConfig = function(path){
-  var json = require(path);
-  var rules = {};
-  for(var i in json){
-      if(json[i]['files']){
-          var obj = json[i]['files']
-          for(var j in obj){
-              rules[j] = obj[j];
-          }
-      }
-  }
-  return rules;
-};
-//format Config
-var packRule = {
-  js : readConfig(conf.package_js),
-  css : readConfig(conf.package_css)
-};
+
+var conf = require('./confReader');
+var options = {};
 
 //get local file content
 var getFile = function(fileName, fileRoot, suffix){
@@ -45,9 +28,6 @@ var getFile = function(fileName, fileRoot, suffix){
               }
           }
       }
-
-      fs.writeFile(fileRoot + fileName, content, {encoding : 'binary'});
-      console.log('Renew :' + fileRoot + fileName);
   }else{
       if(fs.existsSync(fileRoot + fileName)){
           console.log('==Found :' + fileRoot + fileName);
@@ -101,18 +81,16 @@ var responseFunction = function(req, res) {
   for(var rule in rewrite){
       if(pathname.match(new RegExp(rule))){
           fileRoot = pathname.replace(new RegExp(rule), rewrite[rule]).replace(/(.*\/).*/, '$1');
-          fileName = pathname.replace(/^\/.*(?:\/)/,'');
+          fileName = pathname.replace(/.*\/(.*\.\w*)/,'$1');
           rewriteFlag = true;
           break;
       }
   }
- 
-   
+  
   if(!rewriteFlag){
-    fileRoot = conf.root + pathname.replace(/[^\/]?[\w\.]*[^\/]$/g,'');
+    fileRoot = conf.root + pathname.replace(/[^\/]?[\w-]+\.\w+|[^\/]$/,'');
     fileName = pathname.replace(/\/([\w-]+\/)*/,'');
   }
-  console.log('fileRoot : ====' + fileRoot);
 
   //default visit
   fileName = fileName ? fileName : 'index.html';
@@ -122,7 +100,6 @@ var responseFunction = function(req, res) {
   console.log( "==You redirectTo : " + fileRoot + fileName );
 
   if(fileRoot.indexOf('http') != 0){
-    console.log(ext, mines[ext]);
     if(mines[ext]){
       res.writeHead(200, {'Content-Type': (mines[ext] || "text/plain")});  
     }
@@ -131,7 +108,7 @@ var responseFunction = function(req, res) {
     res.write(getFile(fileName, fileRoot, ext), 'binary');
     res.end('');
   }else{
-    getHTTPRequest(fileRoot + fileName, function(data){console.log(ext, mines[ext]);
+    getHTTPRequest(fileRoot + fileName, function(data){
       if(mines[ext]){
         res.writeHead(200, {'Content-Type': (mines[ext] || "text/plain")});  
       }
@@ -141,17 +118,16 @@ var responseFunction = function(req, res) {
   }
 
   console.log('>>>>>Pathname : ' + pathname + ' == End<<<<<<< \n');
-}
+};
+
+var response = function(req, res) {
+  console.log(req);
+};
+
+// server listening
+// console.log('Server start & listening to port :443/');
+// https.createServer(options, response).listen(443);
 
 //server listening
-http.createServer(responseFunction).listen(80);
 console.log('Server start & listening to port :80/' + '\n');
-
-if(conf.srckey){
-  //server listening
-  https.createServer({
-    key : conf.srckey.key,
-    cert : conf.srckey.cert
-  }, responseFunction).listen(443);
-  console.log('Server start & listening to port :443/');
-}
+http.createServer(response).listen(80);
