@@ -1,4 +1,8 @@
 MaidJS
 ======
 
-A proxy server of NodeJS, It can help you solve a lot of problem during your working.
+A proxy server of NodeJS, but just a proxy.
+It like a maid help you to deal with a lot of things.
+
+
+
