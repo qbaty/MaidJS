@@ -1,5 +1,5 @@
 module.exports = {
-	'323':'text/h323',
+	'class':'application/octet-stream',
 	acx:'application/internet-property-stream',
 	ai:'application/postscript',
 	aif:'audio/x-aiff',
@@ -19,7 +19,6 @@ module.exports = {
 	cat:'application/vnd.ms-pkiseccat',
 	cdf:'application/x-cdf',
 	cer:'application/x-x509-ca-cert',
-	'class':'application/octet-stream',
 	clp:'application/x-msclip',
 	cmx:'image/x-cmx',
 	cod:'image/cis-cod',
